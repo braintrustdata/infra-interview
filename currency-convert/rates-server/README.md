@@ -5,7 +5,6 @@ This is a simple Flask application that serves (hard-coded) exchange rates. It i
 ## Building and Running the server
 
 ```bash
-docker build -t currency-rates-server .
 # Must be amd64 for AWS App Runner. It doesn't support ARM.
 docker build --platform linux/amd64 -t currency-rates-server .
 docker run -p 5555:5555 currency-rates-server

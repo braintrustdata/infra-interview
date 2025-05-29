@@ -2,14 +2,13 @@ import time
 import random
 from flask import Flask, jsonify, request
 import datetime
-
-# from datetime import timezone
+import hashlib
 
 app = Flask(__name__)
 app.json.compact = False
 
 # Hardcoded exchange rates (base: USD)
-EXCHANGE_RATES = {
+BASE_EXCHANGE_RATES = {
     "EUR": 0.89,
     "JPY": 155.00,
     "GBP": 0.78,
@@ -25,11 +24,31 @@ EXCHANGE_RATES = {
 }
 
 
+def get_fluctuating_rates():
+    """Generate exchange rates simulating random fluctuations every 10 seconds"""
+    current_time = int(time.time())
+    time_window = current_time // 10
+
+    fluctuating_rates = {}
+    for currency, rate in BASE_EXCHANGE_RATES.items():
+        # Create a deterministic hash for this currency and time window
+        hash_input = f"{currency}:{time_window}".encode()
+        hash_value = int(hashlib.sha256(hash_input).hexdigest(), 16)
+
+        # Use the hash to generate a deterministic fluctuation between -1% and +1%
+        # Convert the hash to a value between 0 and 1, then scale to -0.01 to 0.01
+        fluctuation = ((hash_value % 10000) / 10000.0) * 0.02 - 0.01
+
+        fluctuating_rates[currency] = round(rate * (1 + fluctuation), 2)
+
+    return fluctuating_rates
+
+
 def get_response_data():
     return {
         "timestamp": datetime.datetime.now(datetime.UTC).isoformat(),
         "base_currency": "USD",
-        "rates": EXCHANGE_RATES,
+        "rates": get_fluctuating_rates(),
     }
 
 
@@ -83,7 +102,7 @@ def get_rates_v2():
     if choice == "error":
         return jsonify({"error": "Internal Server Error (simulated)"}), 500
     elif choice == "sleep":
-        time.sleep(5)
+        time.sleep(60)
 
     return jsonify(get_response_data())
 
