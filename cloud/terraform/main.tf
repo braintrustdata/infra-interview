@@ -29,7 +29,7 @@ resource "aws_instance" "server" {
   subnet_id                   = data.aws_subnets.subnets.ids[0]
   associate_public_ip_address = true
 
-  vpc_security_group_ids = [aws_security_group.ssh_access.id]
+  vpc_security_group_ids = []
   key_name               = aws_key_pair.deployer.key_name
 
   root_block_device {
