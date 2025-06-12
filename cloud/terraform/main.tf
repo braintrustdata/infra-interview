@@ -1,8 +1,3 @@
-resource "aws_key_pair" "deployer" {
-  key_name   = "${var.project_name}-key"
-  public_key = ""
-}
-
 resource "aws_security_group" "ssh_access" {
   name        = "${var.project_name}-ssh-sg"
   description = "Security group for SSH access"
@@ -44,9 +39,6 @@ resource "aws_instance" "server" {
     }
   }
 
-  # User data script
-  user_data = base64encode(local.user_data)
-
   tags = {
     Name    = "${var.project_name}-web-server"
     Project = var.project_name
@@ -54,14 +46,9 @@ resource "aws_instance" "server" {
   }
 }
 
-locals {
-  user_data = <<-EOF
-    #!/bin/bash
-    apt-get update
-    apt-get install -y htop curl wget
-  EOF
-
-  vpc_id = "vpc-0687fb9b947f706d2"
+resource "aws_key_pair" "deployer" {
+  key_name   = "${var.project_name}-key"
+  public_key = ""
 }
 
 data "aws_vpc" "interview_vpc" {
